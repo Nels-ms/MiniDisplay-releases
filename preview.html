@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiniDisplay — Vista previa del diseño</title>
+<style>
+  /* ===== Paleta de la página (presentación) ===== */
+  :root{
+    --accent:#32F0D0;            /* Mint = acento por defecto de la app */
+    --page-bg:#0d0e11;
+    --page-bg-2:#131519;
+    --page-card:#191b20;
+    --page-border:#26282e;
+    --page-text:#eef0f3;
+    --page-text-dim:#9aa0aa;
+
+    /* ---- Tema OSCURO de la app (valores reales) ---- */
+    --d-card-a:#000000; --d-card-b:#121212;
+    --d-window:#1A1B1E; --d-window2:#242529;
+    --d-text:#F2F2F3;   --d-text2:#A8ABB2;
+    --d-border:#2E2F33;
+    --d-art-a:#2A2A2E;  --d-art-b:#16161A;
+    --d-toggle-off:#4D5058;
+
+    /* ---- Tema CLARO de la app (valores reales) ---- */
+    --l-card-a:#ECE9E6; --l-card-b:#ffffff;
+    --l-window:#F4F5F7; --l-window2:#EAECEF;
+    --l-text:#1C1D1F;   --l-text2:#6B7077;
+    --l-border:#E2E5EA;
+    --l-art-a:#E8EAED;  --l-art-b:#D2D6DC;
+    --l-toggle-off:#C9CDD4;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Segoe UI",system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 80% -10%, rgba(50,240,208,.10), transparent 60%),
+      radial-gradient(900px 500px at 0% 0%, rgba(99,102,241,.10), transparent 55%),
+      var(--page-bg);
+    color:var(--page-text);
+    line-height:1.55;
+    padding-bottom:80px;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  section{padding:64px 0;border-top:1px solid var(--page-border)}
+  section:first-of-type{border-top:none}
+
+  .eyebrow{
+    display:inline-block;font-size:12px;font-weight:600;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--accent);margin-bottom:14px;
+  }
+  h1{font-size:clamp(38px,6vw,64px);font-weight:700;letter-spacing:-.02em;line-height:1.05}
+  h2{font-size:clamp(26px,3.5vw,34px);font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+  .lead{font-size:18px;color:var(--page-text-dim);max-width:640px}
+  .sub{color:var(--page-text-dim);margin-bottom:36px;max-width:640px}
+
+  /* ===== HERO ===== */
+  .hero{padding-top:80px;text-align:center}
+  .logo-badge{
+    width:76px;height:76px;border-radius:20px;margin:0 auto 26px;
+    display:grid;place-items:center;
+    background:linear-gradient(145deg,#1c1e24,#0f1013);
+    border:1px solid var(--page-border);
+    box-shadow:0 12px 40px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .logo-badge svg{width:40px;height:40px}
+  .hero .lead{margin:20px auto 0}
+  .badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+  .badge{
+    font-size:13px;color:var(--page-text-dim);
+    border:1px solid var(--page-border);border-radius:999px;
+    padding:7px 15px;background:rgba(255,255,255,.02);
+  }
+  .badge b{color:var(--page-text)}
+  .hero-stage{margin-top:56px;display:flex;justify-content:center}
+
+  /* ===== Superficie de tema (contenedor con vars conmutadas) ===== */
+  .theme-dark{
+    --card-a:var(--d-card-a);--card-b:var(--d-card-b);
+    --window:var(--d-window);--window2:var(--d-window2);
+    --text:var(--d-text);--text2:var(--d-text2);--border:var(--d-border);
+    --art-a:var(--d-art-a);--art-b:var(--d-art-b);--toggle-off:var(--d-toggle-off);
+  }
+  .theme-light{
+    --card-a:var(--l-card-a);--card-b:var(--l-card-b);
+    --window:var(--l-window);--window2:var(--l-window2);
+    --text:var(--l-text);--text2:var(--l-text2);--border:var(--l-border);
+    --art-a:var(--l-art-a);--art-b:var(--l-art-b);--toggle-off:var(--l-toggle-off);
+  }
+
+  /* ===== El overlay del display (fiel: 450px, radio 8, borde) ===== */
+  .display{
+    width:450px;max-width:100%;
+    background:linear-gradient(215deg,var(--card-a),var(--card-b));
+    border:1px solid var(--border);border-radius:8px;
+    padding:14px 20px;position:relative;
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    color:var(--text);text-align:left;
+  }
+  .display .close{
+    position:absolute;top:8px;right:10px;color:var(--text);opacity:.5;
+    font-size:13px;line-height:1;cursor:default;
+  }
+  .cover{
+    border-radius:6px;background:linear-gradient(135deg,var(--art-a),var(--art-b));
+    display:grid;place-items:center;flex:none;
+  }
+  .cover svg{opacity:.5}
+  .title{font-size:16px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .artist{font-size:13px;color:var(--text2)}
+
+  /* Controles */
+  .controls{display:flex;align-items:center;gap:6px}
+  .btn{
+    width:34px;height:34px;border-radius:8px;display:grid;place-items:center;
+    background:transparent;flex:none;
+  }
+  .btn.play{background:rgba(128,128,128,.12)}
+  .btn svg{width:18px;height:18px;fill:var(--text)}
+  .btn.sm svg{width:16px;height:16px}
+
+  /* App de origen */
+  .app{display:flex;align-items:center;gap:5px}
+  .app svg{width:15px;height:15px;fill:var(--text2)}
+  .app span{font-size:12px;font-weight:600;color:var(--text2)}
+
+  /* Slider */
+  .slider{display:flex;align-items:center;gap:10px;margin-top:12px}
+  .slider .t{font-size:11px;color:var(--text)}
+  .track{flex:1;height:4px;border-radius:2px;background:rgba(128,128,128,.35);position:relative}
+  .track .fill{position:absolute;left:0;top:0;bottom:0;width:38%;border-radius:2px;background:var(--accent)}
+  .track .knob{position:absolute;left:38%;top:50%;transform:translate(-50%,-50%);width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px rgba(50,240,208,.2)}
+
+  /* ---- Preset: Completo ---- */
+  .p-completo{display:grid;grid-template-columns:auto 1fr;gap:16px}
+  .p-completo .cover{width:100px;height:98px}
+  .p-completo .cover svg{width:48px;height:48px}
+  .p-completo .right{display:flex;flex-direction:column;justify-content:space-between;min-width:0}
+  .p-completo .meta{min-width:0}
+  .p-completo .bottom{display:flex;align-items:flex-end;justify-content:space-between;margin-top:12px}
+
+  /* ---- Preset: Compacto ---- */
+  .p-compacto .row{display:flex;align-items:center;gap:12px}
+  .p-compacto .cover{width:46px;height:46px}
+  .p-compacto .cover svg{width:22px;height:22px}
+  .p-compacto .meta{flex:1;min-width:0}
+  .p-compacto .meta .title{font-size:15px}
+  .p-compacto .meta .artist{font-size:12px}
+  .p-compacto .app{margin-top:12px}
+
+  /* ---- Preset: Mínimo ---- */
+  .p-minimo{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .p-minimo .title{font-size:15px}
+
+  /* ===== Grid de presets ===== */
+  .preset-grid{display:grid;grid-template-columns:1fr;gap:28px}
+  .preset-card{
+    background:var(--page-card);border:1px solid var(--page-border);
+    border-radius:16px;padding:28px;
+  }
+  .preset-card .head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:6px}
+  .preset-card h3{font-size:20px;font-weight:650}
+  .preset-card .tag{font-size:12px;color:var(--page-text-dim)}
+  .preset-card .stage{display:flex;justify-content:center;padding:10px 0}
+  .preset-card .stage .display{box-shadow:0 12px 34px rgba(0,0,0,.4)}
+
+  /* ===== Temas lado a lado ===== */
+  .themes{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .theme-panel{border-radius:16px;padding:34px 24px;border:1px solid var(--page-border);display:flex;flex-direction:column;align-items:center;gap:20px}
+  .theme-panel.dark{background:#0b0c0e}
+  .theme-panel.light{background:#e9eb0e;background:#e7e9ec}
+  .theme-panel .tname{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}
+  .theme-panel.dark .tname{color:#c9ccd2}
+  .theme-panel.light .tname{color:#4a4e55}
+
+  /* ===== Paleta ===== */
+  .pal-group{margin-bottom:24px}
+  .pal-group h4{font-size:13px;font-weight:600;color:var(--page-text-dim);margin-bottom:12px;letter-spacing:.03em}
+  .swatches{display:flex;flex-wrap:wrap;gap:10px}
+  .sw{width:44px;height:44px;border-radius:12px;position:relative;border:1px solid rgba(255,255,255,.06)}
+  .sw::after{
+    content:attr(data-hex);position:absolute;left:50%;bottom:-20px;transform:translateX(-50%);
+    font-size:9px;color:var(--page-text-dim);opacity:0;transition:opacity .15s;white-space:nowrap;
+  }
+  .sw:hover::after{opacity:1}
+  .sw.default{box-shadow:0 0 0 2px var(--page-bg),0 0 0 4px var(--accent)}
+  .pal-note{font-size:13px;color:var(--page-text-dim);margin-top:8px}
+
+  /* ===== Config window mock ===== */
+  .cfg-stage{display:flex;justify-content:center}
+  .cfg{
+    width:700px;max-width:100%;border-radius:8px;overflow:hidden;
+    background:var(--window);border:1px solid var(--border);
+    box-shadow:0 24px 70px rgba(0,0,0,.5);color:var(--text);
+  }
+  .cfg .titlebar{height:35px;display:flex;align-items:center;justify-content:space-between;padding:0 12px}
+  .cfg .titlebar .ico{width:16px;height:16px;border-radius:4px;background:linear-gradient(145deg,var(--accent),#1aa)}
+  .cfg .titlebar .win{color:var(--text2);font-size:13px;letter-spacing:2px}
+  .cfg .body{padding:22px}
+  .cfg h3.cfg-title{font-size:24px;font-weight:600;color:var(--text)}
+  .cfg .divider{height:1.5px;background:var(--window2);border-radius:1px;margin:8px 0 20px}
+  .cfg .sec-title{font-size:17px;font-weight:600;margin-bottom:14px}
+  .cfg-card{background:var(--window2);border-radius:8px;padding:15px;margin-bottom:16px}
+  .cfg-card .lbl{font-size:13px;font-weight:500;color:var(--text)}
+  .cfg-card .desc{font-size:11px;color:var(--text2);margin-top:2px}
+  .cfg-row2{display:grid;grid-template-columns:.6fr 1fr;gap:12px}
+
+  .toggle-line{display:flex;align-items:center;gap:10px;margin-top:12px;color:var(--text2);font-size:13px}
+  .switch{width:44px;height:22px;border-radius:22px;background:var(--toggle-off);position:relative;flex:none;transition:background .2s}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+  .switch.on{background:var(--accent)}
+  .switch.on::after{left:25px}
+
+  .theme-icon{font-size:40px;text-align:center;margin-top:14px;color:var(--accent);opacity:.9}
+
+  /* preset mini-cards dentro de config */
+  .mini-presets{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px}
+  .mini{border:1px solid transparent;border-radius:10px;padding:10px;text-align:center}
+  .mini.active{border-color:var(--accent)}
+  .mini .scheme{
+    width:124px;height:60px;border-radius:6px;padding:8px;
+    background:linear-gradient(215deg,var(--card-a),var(--card-b));
+    border:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;gap:5px;
+  }
+  .mini .mname{font-size:12px;color:var(--text);margin-top:10px}
+  .bar{height:4px;border-radius:2px;background:var(--text2)}
+  .dot{width:5px;height:5px;border-radius:50%;background:var(--text2)}
+
+  .cfg-opacity{display:flex;align-items:center;gap:12px}
+  .cfg-opacity .track{max-width:250px}
+  .cfg-opacity .pct{font-size:13px;font-weight:700;color:var(--text2)}
+
+  .cfg-swatches{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .cfg-swatches .csw{width:25px;height:25px;border-radius:50%}
+  .cfg-swatches .csw.sel{box-shadow:0 0 0 2px var(--window2),0 0 0 4px var(--accent)}
+
+  /* ===== Features ===== */
+  .feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+  .feat{background:var(--page-card);border:1px solid var(--page-border);border-radius:14px;padding:22px}
+  .feat .fico{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;margin-bottom:14px;background:rgba(50,240,208,.1)}
+  .feat .fico svg{width:20px;height:20px;fill:var(--accent)}
+  .feat h4{font-size:16px;font-weight:650;margin-bottom:6px}
+  .feat p{font-size:14px;color:var(--page-text-dim)}
+
+  footer{text-align:center;padding-top:56px;color:var(--page-text-dim);font-size:14px}
+  footer .tech{margin-top:10px;font-size:13px}
+  footer .credit{margin-top:16px;font-size:13px}
+  footer .credit b{color:var(--accent)}
+  footer code{background:var(--page-card);border:1px solid var(--page-border);border-radius:6px;padding:2px 7px;font-size:12px}
+
+  @media(max-width:760px){
+    .themes{grid-template-columns:1fr}
+    .cfg-row2{grid-template-columns:1fr}
+    .p-completo{grid-template-columns:1fr}
+    .p-completo .cover{width:100%;height:120px}
+  }
+</style>
+</head>
+<body>
+
+<!-- Iconos SVG reutilizables -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-music"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></g>
+    <g id="i-prev"><path d="M6 6h2v12H6zm3.5 6L18 6v12z"/></g>
+    <g id="i-next"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></g>
+    <g id="i-play"><path d="M8 5v14l11-7z"/></g>
+    <g id="i-pause"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></g>
+    <g id="i-cover"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></g>
+  </defs>
+</svg>
+
+<div class="wrap">
+
+  <!-- ===================== HERO ===================== -->
+  <section class="hero">
+    <div class="logo-badge">
+      <svg viewBox="0 0 24 24" fill="var(--accent)"><use href="#i-music"/></svg>
+    </div>
+    <span class="eyebrow">Overlay de música · Windows</span>
+    <h1>MiniDisplay</h1>
+    <p class="lead">Un panel flotante que muestra lo que suena —carátula, título, artista y controles— al estilo del aviso de cambio de pista de Windows&nbsp;10. Se integra con cualquier reproductor del sistema vía SMTC.</p>
+    <div class="badges">
+      <span class="badge"><b>.NET 8</b> · WPF</span>
+      <span class="badge"><b>SMTC</b> · Spotify, navegadores…</span>
+      <span class="badge"><b>3</b> disposiciones</span>
+      <span class="badge"><b>Tema</b> claro / oscuro</span>
+      <span class="badge"><b>42</b> colores de acento</span>
+    </div>
+
+    <div class="hero-stage">
+      <div class="theme-dark">
+        <div class="display">
+          <span class="close">✕</span>
+          <div class="p-completo">
+            <div class="cover"><svg viewBox="0 0 24 24"><use href="#i-cover"/></svg></div>
+            <div class="right">
+              <div class="meta">
+                <div class="title">Blinding Lights</div>
+                <div class="artist">The Weeknd</div>
+              </div>
+              <div class="bottom">
+                <div class="controls">
+                  <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg></div>
+                  <div class="btn play"><svg viewBox="0 0 24 24"><use href="#i-pause"/></svg></div>
+                  <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-next"/></svg></div>
+                </div>
+                <div class="app">
+                  <svg viewBox="0 0 24 24"><use href="#i-music"/></svg>
+                  <span>Spotify</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="slider">
+            <span class="t">01:14</span>
+            <div class="track"><div class="fill"></div><div class="knob"></div></div>
+            <span class="t">03:20</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PRESETS ===================== -->
+  <section id="presets">
+    <span class="eyebrow">Disposiciones</span>
+    <h2>Tres presets, un mismo estado</h2>
+    <p class="sub">El display se dibuja por binding a un único estado y su disposición se elige con plantillas intercambiables desde Configuración. Cada preset trae sus valores por defecto de visibilidad.</p>
+
+    <div class="preset-grid">
+
+      <!-- Completo -->
+      <div class="preset-card">
+        <div class="head">
+          <h3>Completo</h3>
+          <span class="tag">Carátula grande · controles · app · barra de progreso</span>
+        </div>
+        <div class="stage">
+          <div class="theme-dark">
+            <div class="display">
+              <span class="close">✕</span>
+              <div class="p-completo">
+                <div class="cover"><svg viewBox="0 0 24 24"><use href="#i-cover"/></svg></div>
+                <div class="right">
+                  <div class="meta">
+                    <div class="title">As It Was</div>
+                    <div class="artist">Harry Styles</div>
+                  </div>
+                  <div class="bottom">
+                    <div class="controls">
+                      <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg></div>
+                      <div class="btn play"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></div>
+                      <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-next"/></svg></div>
+                    </div>
+                    <div class="app"><svg viewBox="0 0 24 24"><use href="#i-music"/></svg><span>Spotify</span></div>
+                  </div>
+                </div>
+              </div>
+              <div class="slider">
+                <span class="t">00:47</span>
+                <div class="track"><div class="fill"></div><div class="knob"></div></div>
+                <span class="t">02:47</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compacto -->
+      <div class="preset-card">
+        <div class="head">
+          <h3>Compacto</h3>
+          <span class="tag">Carátula pequeña · fila única · barra de progreso</span>
+        </div>
+        <div class="stage">
+          <div class="theme-dark">
+            <div class="display">
+              <span class="close">✕</span>
+              <div class="p-compacto">
+                <div class="row">
+                  <div class="cover"><svg viewBox="0 0 24 24"><use href="#i-cover"/></svg></div>
+                  <div class="meta">
+                    <div class="title">Levitating</div>
+                    <div class="artist">Dua Lipa</div>
+                  </div>
+                  <div class="controls">
+                    <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg></div>
+                    <div class="btn play"><svg viewBox="0 0 24 24"><use href="#i-pause"/></svg></div>
+                    <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-next"/></svg></div>
+                  </div>
+                </div>
+              </div>
+              <div class="slider">
+                <span class="t">01:58</span>
+                <div class="track"><div class="fill"></div><div class="knob"></div></div>
+                <span class="t">03:23</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mínimo -->
+      <div class="preset-card">
+        <div class="head">
+          <h3>Mínimo</h3>
+          <span class="tag">Solo texto y controles · «Artista · App»</span>
+        </div>
+        <div class="stage">
+          <div class="theme-dark">
+            <div class="display">
+              <span class="close">✕</span>
+              <div class="p-minimo">
+                <div class="meta">
+                  <div class="title">Flowers</div>
+                  <div class="artist">Miley Cyrus • Spotify</div>
+                </div>
+                <div class="controls">
+                  <div class="btn sm"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg></div>
+                  <div class="btn play sm"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></div>
+                  <div class="btn sm"><svg viewBox="0 0 24 24"><use href="#i-next"/></svg></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===================== TEMAS ===================== -->
+  <section id="temas">
+    <span class="eyebrow">Apariencia</span>
+    <h2>Claro y oscuro</h2>
+    <p class="sub">Dos temas cuidados que intercambian todo el diccionario de brushes en caliente. El color de acento se aplica en tiempo de ejecución sobre ambos.</p>
+
+    <div class="themes">
+      <div class="theme-panel dark">
+        <span class="tname">Tema oscuro</span>
+        <div class="theme-dark">
+          <div class="display">
+            <span class="close">✕</span>
+            <div class="p-compacto">
+              <div class="row">
+                <div class="cover"><svg viewBox="0 0 24 24"><use href="#i-cover"/></svg></div>
+                <div class="meta"><div class="title">Starboy</div><div class="artist">The Weeknd</div></div>
+                <div class="controls">
+                  <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg></div>
+                  <div class="btn play"><svg viewBox="0 0 24 24"><use href="#i-pause"/></svg></div>
+                  <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-next"/></svg></div>
+                </div>
+              </div>
+            </div>
+            <div class="slider"><span class="t">00:32</span><div class="track"><div class="fill"></div><div class="knob"></div></div><span class="t">03:50</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="theme-panel light">
+        <span class="tname">Tema claro</span>
+        <div class="theme-light">
+          <div class="display">
+            <span class="close">✕</span>
+            <div class="p-compacto">
+              <div class="row">
+                <div class="cover"><svg viewBox="0 0 24 24"><use href="#i-cover"/></svg></div>
+                <div class="meta"><div class="title">Starboy</div><div class="artist">The Weeknd</div></div>
+                <div class="controls">
+                  <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg></div>
+                  <div class="btn play"><svg viewBox="0 0 24 24"><use href="#i-pause"/></svg></div>
+                  <div class="btn"><svg viewBox="0 0 24 24"><use href="#i-next"/></svg></div>
+                </div>
+              </div>
+            </div>
+            <div class="slider"><span class="t">00:32</span><div class="track"><div class="fill"></div><div class="knob"></div></div><span class="t">03:50</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== PALETA ===================== -->
+  <section id="paleta">
+    <span class="eyebrow">Color de acento</span>
+    <h2>Paleta</h2>
+    <p class="sub">42 tonos de luminancia media que contrastan bien sobre ambos temas, más dos neutros pensados cada uno para un tema concreto. El acento tiñe la barra de progreso y los detalles.</p>
+
+    <div id="palette"></div>
+    <p class="pal-note">El anillo marca <b>Mint (#32F0D0)</b>, el acento por defecto.</p>
+  </section>
+
+  <!-- ===================== CONFIG ===================== -->
+  <section id="config">
+    <span class="eyebrow">Pantalla de ajustes</span>
+    <h2>Configuración</h2>
+    <p class="sub">Todo se cambia en vivo con vista previa: tema, elementos visibles del reproductor, disposición, opacidad y color de acento.</p>
+
+    <div class="cfg-stage">
+      <div class="theme-dark">
+        <div class="cfg">
+          <div class="titlebar">
+            <div class="ico"></div>
+            <div class="win">−&nbsp;&nbsp;✕</div>
+          </div>
+          <div class="body">
+            <h3 class="cfg-title">Configuracion</h3>
+            <div class="divider"></div>
+            <div class="sec-title">Aspecto Visual y Temas</div>
+
+            <div class="cfg-row2">
+              <!-- Tema -->
+              <div class="cfg-card">
+                <div class="lbl">Tema de la aplicación</div>
+                <div class="toggle-line"><div class="switch on"></div> Modo Oscuro</div>
+                <div class="theme-icon">☾</div>
+              </div>
+              <!-- Elementos -->
+              <div class="cfg-card">
+                <div class="lbl">Elementos del reproductor</div>
+                <div class="desc">Muestra u oculta partes del mini reproductor</div>
+                <div class="toggle-line"><div class="switch on"></div> Mostrar carátula</div>
+                <div class="toggle-line"><div class="switch on"></div> Mostrar barra de progreso</div>
+                <div class="toggle-line"><div class="switch on"></div> Mostrar app de origen</div>
+              </div>
+            </div>
+
+            <!-- Disposición -->
+            <div class="cfg-card">
+              <div class="lbl">Disposición del display</div>
+              <div class="desc">Elige cómo se organiza el mini reproductor</div>
+              <div class="mini-presets">
+                <div class="mini active">
+                  <div class="scheme">
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <div style="width:26px;height:26px;border-radius:3px;background:var(--text2)"></div>
+                      <div style="flex:1">
+                        <div class="bar" style="width:80%;margin-bottom:4px"></div>
+                        <div class="bar" style="width:55%;height:3px;opacity:.7;margin-bottom:5px"></div>
+                        <div style="display:flex;gap:4px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                      </div>
+                    </div>
+                    <div class="bar" style="height:3px;opacity:.6"></div>
+                  </div>
+                  <div class="mname">Completo</div>
+                </div>
+                <div class="mini">
+                  <div class="scheme">
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <div style="width:18px;height:18px;border-radius:3px;background:var(--text2)"></div>
+                      <div style="flex:1">
+                        <div class="bar" style="width:75%;margin-bottom:3px"></div>
+                        <div class="bar" style="width:45%;height:3px;opacity:.7"></div>
+                      </div>
+                      <div style="display:flex;gap:3px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    </div>
+                    <div class="bar" style="height:3px;opacity:.6"></div>
+                  </div>
+                  <div class="mname">Compacto</div>
+                </div>
+                <div class="mini">
+                  <div class="scheme" style="justify-content:center">
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <div style="flex:1">
+                        <div class="bar" style="width:80%;margin-bottom:4px"></div>
+                        <div class="bar" style="width:52%;height:3px;opacity:.7"></div>
+                      </div>
+                      <div style="display:flex;gap:3px"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+                    </div>
+                  </div>
+                  <div class="mname">Mínimo</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Opacidad -->
+            <div class="cfg-card">
+              <div class="lbl">Opacidad del reproductor</div>
+              <div class="desc">Haz que el mini reproductor sea semi-transparente</div>
+              <div class="cfg-opacity" style="margin-top:12px">
+                <div style="width:10px;height:10px;border-radius:50%;background:var(--text2)"></div>
+                <div class="track"><div class="fill" style="width:90%"></div><div class="knob" style="left:90%"></div></div>
+                <span class="pct">90%</span>
+              </div>
+            </div>
+
+            <!-- Color -->
+            <div class="cfg-card">
+              <div class="lbl">Color de acento</div>
+              <div class="desc">Cambia el color de la barra de reproducción y detalles</div>
+              <div class="cfg-swatches" id="cfg-swatches"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== FEATURES ===================== -->
+  <section id="features">
+    <span class="eyebrow">Qué incluye</span>
+    <h2>Características</h2>
+    <div class="feat-grid" style="margin-top:28px">
+      <div class="feat"><div class="fico"><svg viewBox="0 0 24 24"><use href="#i-music"/></svg></div><h4>Integración SMTC</h4><p>Detecta la pista de cualquier reproductor del sistema: Spotify, navegadores y más.</p></div>
+      <div class="feat"><div class="fico"><svg viewBox="0 0 24 24"><use href="#i-play"/></svg></div><h4>Controles nativos</h4><p>Anterior, play/pausa y siguiente. Barra de progreso con búsqueda por clic o arrastre.</p></div>
+      <div class="feat"><div class="fico"><svg viewBox="0 0 24 24"><use href="#i-next"/></svg></div><h4>Marquesina inteligente</h4><p>El título largo se desplaza al aparecer, al pasar el ratón y al cambiar de canción.</p></div>
+      <div class="feat"><div class="fico"><svg viewBox="0 0 24 24"><use href="#i-cover"/></svg></div><h4>Auto-ocultado</h4><p>El overlay aparece y se oculta solo con fundido; respeta el ratón encima.</p></div>
+      <div class="feat"><div class="fico"><svg viewBox="0 0 24 24"><use href="#i-pause"/></svg></div><h4>Bandeja del sistema</h4><p>Icono en la bandeja con menú contextual para abrir ajustes o salir.</p></div>
+      <div class="feat"><div class="fico"><svg viewBox="0 0 24 24"><use href="#i-prev"/></svg></div><h4>Ajustes persistentes</h4><p>Preferencias guardadas en <code style="color:inherit">settings.json</code> en tu perfil.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>MiniDisplay — vista previa de diseño</div>
+    <div class="tech">Hecho con <code>.NET 8</code> · <code>WPF</code> · <code>SMTC</code></div>
+    <div class="credit">Creado por <b>Nelson Macedo</b></div>
+  </footer>
+
+</div>
+
+<script>
+  // Paleta agrupada (idéntica a Models/AccentPalette.cs)
+  const GROUPS = [
+    ["Cian / Verde-agua", ["#32F0D0","#2DD4BF","#14B8A6","#06B6D4","#22D3EE","#0EA5E9"]],
+    ["Azul / Índigo",     ["#38BDF8","#3B82F6","#2563EB","#60A5FA","#6366F1","#4F46E5"]],
+    ["Violeta / Púrpura", ["#8B5CF6","#7C3AED","#6D28D9","#A855F7","#9333EA","#C084FC"]],
+    ["Rosa / Magenta",    ["#D946EF","#EC4899","#DB2777","#F472B6","#F43F5E","#FB7185"]],
+    ["Rojo / Naranja",    ["#EF4444","#DC2626","#FF6B6B","#F97316","#FB923C","#EA580C"]],
+    ["Ámbar",             ["#F59E0B","#FBBF24","#D97706"]],
+    ["Verde / Emerald",   ["#22C55E","#16A34A","#1ED760","#10B981","#34D399","#4ADE80","#84CC16"]],
+    ["Neutros",           ["#B9B9BE","#3C3C40"]],
+  ];
+  const palRoot = document.getElementById("palette");
+  for (const [name, colors] of GROUPS){
+    const g = document.createElement("div"); g.className="pal-group";
+    g.innerHTML = `<h4>${name}</h4>`;
+    const row = document.createElement("div"); row.className="swatches";
+    for (const c of colors){
+      const s = document.createElement("div");
+      s.className = "sw" + (c==="#32F0D0" ? " default":"");
+      s.style.background = c; s.dataset.hex = c;
+      row.appendChild(s);
+    }
+    g.appendChild(row); palRoot.appendChild(g);
+  }
+
+  // Muestra de colores dentro del mock de config (una fila representativa)
+  const CFG = ["#32F0D0","#2DD4BF","#06B6D4","#3B82F6","#6366F1","#8B5CF6","#A855F7","#EC4899","#F43F5E","#EF4444","#F97316","#F59E0B","#22C55E","#1ED760"];
+  const cfgRoot = document.getElementById("cfg-swatches");
+  CFG.forEach((c,i)=>{
+    const d = document.createElement("div");
+    d.className = "csw" + (i===0 ? " sel":"");
+    d.style.background = c;
+    cfgRoot.appendChild(d);
+  });
+</script>
+
+</body>
+</html>
