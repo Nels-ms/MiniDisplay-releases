@@ -52,10 +52,6 @@ La app se distribuye mediante un **instalador** que la registra en el menú de i
 "Aplicaciones instaladas", y se **actualiza sola** usando [**Velopack**](https://velopack.io)
 con **GitHub Releases** como origen. También puede generarse un `.exe` autocontenido portable.
 
-Los binarios de cada versión se publican en un repositorio público aparte:
-[`Nels-ms/MiniDisplay-releases`](https://github.com/Nels-ms/MiniDisplay-releases).
-
-> 📖 El proceso completo paso a paso está en **[DESPLIEGUE.md](DESPLIEGUE.md)**.
 
 ## 🧱 Arquitectura
 
